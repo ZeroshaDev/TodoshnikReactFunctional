@@ -1,24 +1,31 @@
-import React, { useContext, useState } from 'react'
-import MyContext from '../MyContext'
+import React, { useEffect, useState } from 'react'
 import uuid from 'react-uuid'
 import Task from './task/Task'
 import '../../index.css'
+import { useDispatch, useSelector } from 'react-redux'
+import * as actions from '../actions/actions'
+import { GetToken, GetStorage } from '../selectors/selectors'
+import { addTask, fetchTodos } from '../reducers/storageReducer'
 
 const MainPage = (props) => {
   const { setLogined } = props
-  const [list, setList] = useState(false)
   const [content, setContent] = useState('')
-  const context = useContext(MyContext)
+  //const context = useContext(MyContext)
 
-  const handleRefresh = () => {
-    setList(!list)
-  }
+  const dispatch = useDispatch()
+  const token = useSelector(GetToken)
+  const storage = useSelector(GetStorage)
 
   const handleClickAddBtn = () => {
     if (content !== '') {
-      context.store.add(uuid(), content, false)
+      addTask(
+        { id: uuid(), content: content, completed: false },
+        token,
+        dispatch
+      )
+
+      // context.store.add(uuid(), content, false)
       setContent('')
-      handleRefresh()
     } else {
       alert('In field mast be some information')
     }
@@ -26,7 +33,9 @@ const MainPage = (props) => {
 
   const handleClickLogOutBtn = () => {
     setLogined(false)
-    context.store.clear()
+    dispatch({ type: actions.clear.type })
+    //context.store.clear()
+    dispatch({ type: actions.clearToken.type })
   }
 
   const handleChange = (event) => {
@@ -43,6 +52,14 @@ const MainPage = (props) => {
     }
   }
 
+  useEffect(() => {
+    if (!token) {
+      return
+    }
+
+    fetchTodos(dispatch, token)
+  }, [dispatch, token])
+
   return (
     <div>
       <input
@@ -55,14 +72,13 @@ const MainPage = (props) => {
       <button onClick={handleClickAddBtn}>Add</button>
       <button onClick={handleClickLogOutBtn}>LogOut</button>
       <ul>
-        {context.store.storage.map((elem) => (
+        {storage.map((elem) => (
           <Task
             key={elem.id}
             id={elem.id}
             propsContent={elem.content}
             completed={elem.completed}
-            storage={context.store}
-            refresh={handleRefresh}
+            storage={storage}
           />
         ))}
       </ul>

@@ -1,15 +1,23 @@
-import React, { useState, useContext } from 'react'
+import React, { useState } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
 import { Navigate } from 'react-router-dom'
-import MyContext from '../MyContext'
+import * as actions from '../actions/actions'
 import '../../index.css'
+import { log } from '../reducers/storageReducer'
+import { GetStorage, GetToken } from '../selectors/selectors'
 
 const AuthoriztionPage = (props) => {
-  const storage = useContext(MyContext)
-  const { loader, chengeLoginedOnTrue } = props
+  //const storage = useContext(MyContext)
+  const tokend = useSelector(GetToken)
+  const storage = useSelector(GetStorage)
+
+  const { chengeLoginedOnTrue } = props
 
   const [display, setDisplay] = useState(true)
   const [login, setLogin] = useState('')
   const [password, setPassword] = useState('')
+
+  const dispatch = useDispatch()
 
   const handleClickLogin = async () => {
     let token
@@ -27,9 +35,9 @@ const AuthoriztionPage = (props) => {
       .then(function (data) {
         token = data
       })
-    storage.store.tokenSetter(token.token)
+    dispatch({ type: actions.setToken.type, payload: token.token })
+    log(storage, tokend)
     setDisplay(false)
-    loader()
     chengeLoginedOnTrue()
   }
 
@@ -49,9 +57,9 @@ const AuthoriztionPage = (props) => {
       .then(function (data) {
         token = data
       })
-    storage.store.tokenSetter(token.token)
+    dispatch({ type: actions.setToken.type, payload: token.token })
     setDisplay(false)
-    loader()
+    // loader()
     chengeLoginedOnTrue()
   }
 
@@ -61,6 +69,14 @@ const AuthoriztionPage = (props) => {
   const inputPassword = (e) => {
     setPassword(e.target.value)
   }
+
+  // const handleInclement = useCallback(() => {
+  //   dispatch({ type: actions.incrementCounter.type, payload: 1 })
+  // }, [dispatch])
+
+  // const handleDevrement = useCallback(() => {
+  //   dispatch({ type: actions.decrementCounter.type, payload: 1 })
+  // }, [dispatch])
 
   return (
     <div className={display ? 'modal' : 'hidden'}>

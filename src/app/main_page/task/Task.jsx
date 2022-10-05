@@ -1,27 +1,34 @@
 import React, { useState } from 'react'
 import Content from './content/Content'
 import '../../../index.css'
+import { useSelector, useDispatch } from 'react-redux'
+import { GetStorage, GetToken } from '../../selectors/selectors'
+import { complete, deleteTask, editTask } from '../../reducers/storageReducer'
 
 const Task = (props) => {
-  const { storage, refresh, id, completed, propsContent } = props
+  const { id, completed, propsContent } = props
+
+  const dispatch = useDispatch()
+  const token = useSelector(GetToken)
+  const storage = useSelector(GetStorage)
 
   const [nowOnChange, setNowOnChange] = useState(false)
   const [content, setContent] = useState('')
 
   const deleteOnClic = () => {
-    storage.delete(id)
-    refresh()
+    deleteTask(storage, id, token, dispatch)
+    //storage.delete(id)
   }
   const doneOnClick = () => {
-    storage.complete(id)
-    refresh()
+    complete(storage, id, token, dispatch)
+    //storage.complete(id)
   }
   const editOnClick = () => {
     if (nowOnChange) {
-      storage.edit(id, content)
+      editTask(storage, id, content, token, dispatch)
+      //storage.edit(id, content)
     }
     setNowOnChange(!nowOnChange)
-    refresh()
   }
 
   const contentSetter = (updatedContent) => {
